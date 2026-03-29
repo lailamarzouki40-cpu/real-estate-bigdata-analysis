@@ -1,223 +1,205 @@
-# 🏠 Real Estate Big Data Analysis Pipeline
+# Real Estate Big Data Analysis Pipeline
 
-🚀 A full end-to-end Big Data project that analyzes real estate markets using web scraping, data cleaning, Hadoop (HDFS), and MapReduce.
+This project builds a complete data pipeline to analyze real estate markets using Hadoop and MapReduce.
 
----
+It follows a simple workflow:
 
-## 📌 Overview
-
-This project builds a complete **data pipeline** to analyze real estate markets across multiple U.S. cities.
-It covers the full lifecycle:
-
-> **Scrape → Clean → Store → Process → Visualize**
-
-The goal is to extract meaningful insights such as:
-
-- 💰 Price per Bedroom (Affordability)
-- 📏 Price per Square Foot (Value)
+Scrape → Clean → Store → Process → Visualize
 
 ---
 
-## 🧰 Tech Stack
+## Project Value
 
-- **Python** (Selenium, Regex, Pandas)
-- **Web Scraping**: `undetected-chromedriver`, `Selenium`
-- **Big Data**: Hadoop 3.2.1 (HDFS + MapReduce)
-- **Containerization**: Docker
-- **Visualization**: Matplotlib, Seaborn
+This project demonstrates how raw web data can be transformed into useful insights using a distributed system.
+
+Instead of only analyzing data locally, it shows how to:
+
+* Handle large and unstructured datasets
+* Process data using Hadoop (HDFS + MapReduce)
+* Extract meaningful insights for real estate decision-making
+
+It reflects a real data engineering workflow from data collection to final analysis.
 
 ---
 
-## 🔄 Full Project Lifecycle
+## Data Description
 
-### 1. 🌐 Data Ingestion (Web Scraping)
+The raw data collected from real estate websites is unstructured and messy.
 
-Collected raw real estate data from:
+Example of raw data:
 
-- Zillow
-- Realtor.com
-
-**Approach:**
-
-- Used Selenium with `undetected-chromedriver` to bypass bot detection
-- Implemented **deep scrolling** to trigger lazy-loaded listings
-- Handled CAPTCHA interruptions manually
-
-**Cities Scraped:**
-
-- Chicago
-- Houston
-- Dallas
-- Phoenix
-
-📁 Output:
-
-```bash
-realestate_raw.csv
+```text
+"Property detail for Tract 2 Sheffield Rd Siloam Springs, AR ",
+"$120,000",
+"Property detail for Tract 2 Sheffield Rd Siloam Springs, AR 72761 Land for sale $120,000 2.38acre lot 2.38 acre lot Tract 2 Sheffield Rd Siloam Springs, AR 72761 Email Agent",
+"Property detail for Tract 2 Sheffield Rd Siloam Springs, AR 72761 Land for sale $120,000 2.38acre lot 2.38 acre lot Tract 2 Sheffield Rd Siloam Springs, AR 72761 Email Agent",
+"72761"
 ```
 
+Problems with this data:
+
+* Information is repeated
+* Multiple values are mixed in one string
+* Numbers are embedded in text
+* Not directly usable for analysis
+
 ---
 
-### 2. 🧹 Data Cleaning (Regex Normalization)
+## Data Cleaning
 
-Raw data was unstructured (e.g. `"3 bds | 2 ba | 1,500 sqft"`).
+To make the data usable, it was cleaned and structured using Python and Regular Expressions.
 
-**Challenges:**
+The cleaning process included:
 
-- Mixed text fields
-- Missing structured columns
-- Inconsistent formats
+* Extracting the price and converting it to a numeric value
+* Extracting the number of bedrooms
+* Extracting square footage
+* Extracting ZIP codes from addresses
+* Removing duplicated and unnecessary text
 
-**Solution:**
+Example of cleaned data:
 
-- Used **Regular Expressions (Regex)** to:
-  - Extract **Price** (remove `$`, `,`)
-  - Extract **Beds** and **Square Footage**
-  - Validate **Zip Codes** from address
-
-📁 Output:
-
-```bash
-realestate_clean.csv
+```text
+"917 N Britt St Siloam Springs, AR 72761", 187000.0, 2.0, 830.0, 72761
 ```
 
+Final structured columns:
+
+* Address
+* Price
+* Bedrooms
+* Square Footage
+* Zip Code
+
+This structured format makes the data ready for Hadoop processing.
+
 ---
 
-### 3. 🏗️ Infrastructure (Docker + Hadoop HDFS)
+## Processing (MapReduce)
 
-To simulate Big Data processing:
+Two MapReduce jobs were implemented:
 
-- Started a Hadoop cluster using Docker
-- Created HDFS structure:
+### 1. Price per Bedroom (Affordability)
 
-```bash
-/project_realestate/clean/
+* Measures how much it costs to buy a bedroom in each ZIP code
+* Useful for families looking for affordable housing
+
+### 2. Price per Square Foot (Value)
+
+* Measures property value based on space
+* Useful for investors evaluating property worth
+
+---
+
+## Results Interpretation
+
+```
+==================================================
+      REAL ESTATE BIG DATA MARKET REPORT
+==================================================
 ```
 
-- Uploaded cleaned dataset into HDFS:
+### High-Value Areas (Expensive per Square Foot)
 
-```bash
-hdfs dfs -put realestate_clean.csv /project_realestate/clean/
+```
+75229, 10010, 77024, 77027, 60654
 ```
 
----
+These ZIP codes have very high price per square foot.
+This means:
 
-### 4. ⚙️ Distributed Processing (MapReduce)
-
-Implemented 2 analytical MapReduce jobs:
-
----
-
-#### 📊 Job #1: Market Affordability ($ / Bedroom)
-
-**Goal:** Identify affordable housing areas.
-
-- **Mapper Output:** `(ZipCode, [Price, Beds])`
-- **Reducer Logic:**
-  - Sum prices and beds
-  - Compute average **price per bedroom**
+* Properties are expensive relative to their size
+* These areas are likely premium or high-demand markets
+* Investors pay more for location than space
 
 ---
 
-#### 📈 Job #2: Value Analysis ($ / SqFt)
+### Affordable Areas (Best Price per Bedroom)
 
-**Goal:** Evaluate property investment value.
-
-- **Mapper Output:** `(ZipCode, [Price, SqFt])`
-- **Reducer Logic:**
-  - Aggregate total price and total square footage
-  - Compute average **price per square foot**
-
----
-
-### 5. 🐍 Technical Challenge (Python 3.5 Bug)
-
-🚨 **Problem:**
-
-- Hadoop container used an old Debian version
-- Only supported **Python 3.5**
-- My scripts used **f-strings (Python 3.6+)**
-
-✅ **Solution:**
-
-- Updated Debian sources to archive repositories
-- Installed Python manually
-- Refactored code:
-  - Replaced f-strings with `.format()`
-
----
-
-### 6. 📤 Data Extraction & Visualization
-
-After processing:
-
-**Extraction:**
-
-```bash
-hdfs dfs -get /output_folder
-docker cp ...
+```
+11301, 60621, 11637, 60628, 60636
 ```
 
-**Visualization:**
+These ZIP codes offer the lowest cost per bedroom.
+This means:
 
-- Bar charts (price per bedroom)
-- Scatter plots (price vs sqft)
-- Used **Matplotlib + Seaborn**
-
----
-
-## 🔍 Key Insights
-
-- 🏙️ **Houston shows extreme economic disparity**
-  - Some ZIP codes: ~$100k per bedroom
-  - Others: ~$3.5M per bedroom
-
-👉 Conclusion:
-**ZIP Code is a better analytical unit than City name**
+* Better for families
+* More rooms for less money
+* Good residential affordability
 
 ---
 
-## ✅ Final Result
+### Undervalued Areas (Best Space for Price)
 
-✔️ Built a complete Big Data pipeline
-✔️ Successfully processed distributed data using Hadoop
-✔️ Generated meaningful real estate insights
+```
+60628, 11301, 60621, 21426, 60636
+```
 
----
+These areas provide the most space for the lowest cost.
+This means:
 
-## 🧠 What I Learned
-
-- Managing data across:
-  - Windows → Docker → HDFS
-
-- Working with legacy systems (Python 3.5)
-- Writing MapReduce jobs using Hadoop Streaming
-- Handling real-world messy datasets
-- Debugging distributed systems
+* Large properties at low prices
+* Potential investment opportunities
+* Often rural or less developed areas
 
 ---
 
-## 🚀 Future Improvements
+### Key Insight
 
-- Upgrade environment to Python 3.8+
-- Automate pipeline (Airflow / scripts)
-- Build a web dashboard (React / Flask)
-- Add real-time data ingestion
+Some ZIP codes appear in both:
 
----
+* affordable (low price per bedroom)
+* undervalued (low price per sqft)
 
-## 📌 Conclusion
+This indicates strong opportunities where:
 
-This project demonstrates a full **Big Data engineering workflow**, from raw web data collection to distributed analysis and visualization.
+* housing is cheap
+* and space is large
 
-It highlights both:
-
-- Technical implementation
-- Real-world problem solving under constraints
+Also, results show that:
+**ZIP code is a better unit of analysis than city**,
+because large cities can have very different markets inside them.
 
 ---
 
-## 👩‍💻 Author
+## Why Some Parts Are Not Included
+
+* The full dataset is not included because it is large
+
+* Only a sample is provided to show the structure
+
+* The scraper code is not included because:
+
+  * It depends on browser automation and CAPTCHA handling
+  * It is not necessary to understand the data processing pipeline
+
+This repository focuses on the **data engineering and analysis part**.
+
+---
+
+## Technologies Used
+
+* Python
+* Hadoop (HDFS + MapReduce)
+* Docker
+* Matplotlib / Seaborn
+
+---
+
+## Conclusion
+
+This project shows how to transform raw, unstructured web data into structured insights using distributed processing.
+
+It highlights:
+
+* Data cleaning challenges
+* Big Data processing with Hadoop
+* Real-world analysis of real estate markets
+
+---
+
+
+##  Author
 
 **Laila Marzouki**
 Big Data & Software Engineering Enthusiast 🚀
