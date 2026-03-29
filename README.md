@@ -44,6 +44,11 @@ Problems with this data:
 * Not directly usable for analysis
 
 ---
+## Data Source
+
+The dataset is based on publicly available real estate listings from major platforms such as Zillow and Realtor.com.
+
+The data was collected for educational and analysis purposes only.
 
 ## Data Cleaning
 
