@@ -1,0 +1,19 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Data files (hide all CSVs)
+data/*.csv
+
+# BUT keep your sample file
+!data/realestate_raw_sample.csv
+
+# System files
+.DS_Store
+
+# Logs / temp
+*.log
+tmp/

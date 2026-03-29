@@ -1,0 +1,21 @@
+# Real Estate Big Data Project - Requirements
+
+# Data handling
+
+pandas
+numpy
+
+# Web scraping (used to collect data from Zillow & Realtor)
+
+selenium
+undetected-chromedriver
+
+# Visualization (used after Hadoop processing)
+
+matplotlib
+seaborn
+
+# Small helpers (not mandatory but useful during scraping/cleaning)
+
+requests
+tqdm
