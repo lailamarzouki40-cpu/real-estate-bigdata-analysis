@@ -10,6 +10,7 @@ data/*.csv
 
 # BUT keep your sample file
 !data/realestate_raw_sample.csv
+!data/realestate_clean_sample.csv
 
 # System files
 .DS_Store
